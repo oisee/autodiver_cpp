@@ -59,12 +59,7 @@ int main(int argc, const char * argv[]) {
     
     vector<ResultRow> results;
     
-    int counter = 0;
     while ((fd = readdir(dd))){
-        counter ++;
-        if (counter > 6) {
-            continue;
-        }
         if (fd->d_name[0] == '.') {
             continue;
         }
@@ -83,12 +78,12 @@ int main(int argc, const char * argv[]) {
     
     sort(results.begin(), results.end());
     
-    counter = 0;
+    int counter = 0;
     for (auto &result: results) {
         counter ++;
         best_file << get<1>(result)<< ", " << get<0>(result) << endl;
         if (counter <=8) {
-            string command = string("cp ").append(get<1>(result)).append(" ").append(DIR_BEST).append( get<2>(result));
+            string command = string("cp ").append(get<1>(result)).append(" ").append(DIR_BEST).append("best_").append(to_string(counter)).append( get<2>(result));
             system(command.c_str());
         }
     }
