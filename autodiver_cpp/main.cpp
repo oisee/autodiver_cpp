@@ -38,7 +38,7 @@ int main(int argc, const char * argv[]) {
     err = eval_image("/Users/oisee/dev/imt/peep.png");
     cout << "File Err: " << err << endl;
     
-    
+    system("mkdir ./best");
     DIR *dd;
     struct dirent *fd;
     dd = opendir(DIR_EVAL);
@@ -48,6 +48,8 @@ int main(int argc, const char * argv[]) {
     }
     
     //------------------------------------------------------------------
+    
+    
     
     ofstream result_file;
     result_file.open(FILE_RESULT);
