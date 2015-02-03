@@ -8,10 +8,10 @@
 
 #define CELLX 8
 #define CELLY 8
-#define DIR_EVAL "./eval/"
-#define DIR_BEST "./eval/"
-#define FILE_RESULT "result.csv"
-#define FILE_BEST "best.csv"
+#define DIR_EVAL    "./eval/"
+#define DIR_BEST    "./best/"
+#define FILE_RESULT "./best/result.csv"
+#define FILE_BEST   "./best/best.csv"
 
 #include <iostream>
 #include <fstream>
@@ -66,18 +66,30 @@ int main(int argc, const char * argv[]) {
         if (fd->d_name[0] == '.') {
             continue;
         }
-        string image_path = DIR_EVAL;
-        image_path.append(fd->d_name);
-        
+        string image_path = string("").append(DIR_EVAL).append(fd->d_name);
+        string image_file_name = string(fd->d_name);
         err = eval_image(image_path);
         
         cout        << image_path << ", " << err << endl;
         result_file << image_path << ", " << err << endl;
         
+        results.push_back(make_tuple(err, image_path, image_file_name ));
+        
     }
     closedir(dd);
-    
     result_file.close();
+    
+    sort(results.begin(), results.end());
+    
+    counter = 0;
+    for (auto &result: results) {
+        counter ++;
+        best_file << get<1>(result)<< ", " << get<0>(result) << endl;
+        if (counter <=8) {
+            string command = string("cp ").append(get<1>(result)).append(" ").append(DIR_BEST).append( get<2>(result));
+            system(command.c_str());
+        }
+    }
     
     best_file.close();
     
