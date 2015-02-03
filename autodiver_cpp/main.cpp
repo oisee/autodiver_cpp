@@ -8,16 +8,40 @@
 
 #define CELLX 8
 #define CELLY 8
-#define DIR_EVAL    "./eval/"
-#define DIR_BEST    "./best/"
-#define FILE_RESULT "./best/result.csv"
-#define FILE_BEST   "./best/best.csv"
 
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <Magick++.h>
+
+#ifdef _WIN64
+#include "./win/msdirent.h"
+#define COPY_COMMAND "copy "
+#define MKDIR_COMMAND "mkdir .\\best"
+#define DIR_EVAL    ".\\eval\\"
+#define DIR_BEST    ".\\best\\"
+#define FILE_RESULT ".\\best\\result.csv"
+#define FILE_BEST   ".\\best\\best.csv"
+
+#elif _WIN32
+#include "./win/msdirent.h"
+#define COPY_COMMAND "copy "
+#define MKDIR_COMMAND "mkdir .\\best"
+#define DIR_EVAL    ".\\eval\\"
+#define DIR_BEST    ".\\best\\"
+#define FILE_RESULT ".\\best\\result.csv"
+#define FILE_BEST   ".\\best\\best.csv"
+
+#else 
 #include <dirent.h>
+#define COPY_COMMAND "cp "
+#define MKDIR_COMMAND "mkdir ./best"
+#define DIR_EVAL    "./eval/"
+#define DIR_BEST    "./best/"
+#define FILE_RESULT "./best/result.csv"
+#define FILE_BEST   "./best/best.csv"
+
+#endif
 
 using namespace std;
 using namespace Magick;
@@ -35,10 +59,10 @@ int main(int argc, const char * argv[]) {
     
 //  err = eval_image("/Users/oisee/dev/imt/eval/geometry.png_r0_s256_x2_y4.png");
 //  err = eval_image("/Users/oisee/dev/imt/in.jpg");
-    err = eval_image("/Users/oisee/dev/imt/peep.png");
-    cout << "File Err: " << err << endl;
+//  err = eval_image("/Users/oisee/dev/imt/peep.png");
+//  cout << "File Err: " << err << endl;
     
-    system("mkdir ./best");
+    system(MKDIR_COMMAND);
     DIR *dd;
     struct dirent *fd;
     dd = opendir(DIR_EVAL);
@@ -46,14 +70,9 @@ int main(int argc, const char * argv[]) {
         perror("opendir: Path './eval' does not exist or could not be read.");
         return -1;
     }
-    
     //------------------------------------------------------------------
-    
-    
-    
     ofstream result_file;
-    result_file.open(FILE_RESULT);
-    
+    result_file.open(FILE_RESULT);   
     ofstream best_file;
     best_file.open(FILE_BEST);
     
@@ -74,6 +93,7 @@ int main(int argc, const char * argv[]) {
         
     }
     closedir(dd);
+
     result_file.close();
     
     sort(results.begin(), results.end());
@@ -83,7 +103,8 @@ int main(int argc, const char * argv[]) {
         counter ++;
         best_file << get<1>(result)<< ", " << get<0>(result) << endl;
         if (counter <=8) {
-            string command = string("cp ").append(get<1>(result)).append(" ").append(DIR_BEST).append("best_").append(to_string(counter)).append( get<2>(result));
+            string command = string(COPY_COMMAND).append(get<1>(result)).append(" ").append(DIR_BEST).append("best_").append(to_string(counter)).append( get<2>(result));
+			cout << command << endl;
             system(command.c_str());
         }
     }
@@ -96,7 +117,21 @@ int main(int argc, const char * argv[]) {
 int eval_image( string image_path ){
     int err = 0;
     Image img;
-    img.read(image_path);
+	try {
+		// Try reading image file
+		img.read(image_path);
+	}
+	catch (Magick::ErrorFileOpen &error)
+	{
+		// Process Magick++ file open error
+		cerr << "Error: " << error.what() << endl;
+		return 0;
+	}
+	catch (Exception & error_)
+	{
+		cout << "Caught exception: " << error_.what() << endl;
+		return 0;
+	}
     cout << "File: "<< image_path << " X:" << img.columns() << " Y:" << img.rows() << endl;
     int tox,toy = 0;
     
