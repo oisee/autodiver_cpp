@@ -8,9 +8,13 @@
 
 #define CELLX 8
 #define CELLY 8
-#define DIR_EVAL "./eval"
+#define DIR_EVAL "./eval/"
+#define DIR_BEST "./eval/"
+#define FILE_RESULT "result.csv"
+#define FILE_BEST "best.csv"
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <Magick++.h>
 #include <dirent.h>
@@ -35,19 +39,47 @@ int main(int argc, const char * argv[]) {
     cout << "File Err: " << err << endl;
     
     
-    DIR *dp;
-    struct dirent *entry;
-    dp = opendir(DIR_EVAL);
-    if ( dp == NULL ) {
+    DIR *dd;
+    struct dirent *fd;
+    dd = opendir(DIR_EVAL);
+    if ( dd == NULL ) {
         perror("opendir: Path './eval' does not exist or could not be read.");
         return -1;
     }
     
-    while ((entry = readdir(dp))){
-        puts(entry->d_name);
+    //------------------------------------------------------------------
+    
+    ofstream result_file;
+    result_file.open(FILE_RESULT);
+    
+    ofstream best_file;
+    best_file.open(FILE_BEST);
+    
+    vector<ResultRow> results;
+    
+    int counter = 0;
+    while ((fd = readdir(dd))){
+        counter ++;
+        if (counter > 6) {
+            continue;
+        }
+        if (fd->d_name[0] == '.') {
+            continue;
+        }
+        string image_path = DIR_EVAL;
+        image_path.append(fd->d_name);
+        
+        err = eval_image(image_path);
+        
+        cout        << image_path << ", " << err << endl;
+        result_file << image_path << ", " << err << endl;
         
     }
-    closedir(dp);
+    closedir(dd);
+    
+    result_file.close();
+    
+    best_file.close();
     
     return 0;
 }
