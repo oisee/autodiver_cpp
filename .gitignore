@@ -2,9 +2,9 @@ DerivedData
 DerivedData/*
 Debug
 Debug/*
-Relase
-Relase/*
+Release
+Release/*
 autodiver_cpp/Debug
 autodiver_cpp/Debug/*
-autodiver_cpp/Relase
-autodiver_cpp/Relase/*
+autodiver_cpp/Release
+autodiver_cpp/Release/*
